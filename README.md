@@ -11,7 +11,7 @@ AND
 
 The manual system test
 ```
-ruby game_runner.rb
+ruby lib/game_runner.rb
 ```
 produces something like:
 ```

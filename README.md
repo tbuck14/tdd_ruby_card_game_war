@@ -7,6 +7,8 @@ The tests for the 4 classes identified by the spec files should all pass by runn
 ```
 rspec
 ```
+_NOTE: it starts with one passing and one failing test_
+
 AND
 
 The manual system test

@@ -1,1 +1,2 @@
- 
+class WarGame
+end 

@@ -57,6 +57,41 @@ describe WarSocketServer do
   end
 
   # Add more tests to make sure the game is being played
+
+  it "tells pending player that he's waiting" do
+    @server.start
+    client1 = MockWarSocketClient.new(@server.port_number)
+    @server.accept_new_client("Player 1")
+    expect(client1.capture_output).to eq("Welcome.  Waiting for another player to join.\n")
+    client2 = MockWarSocketClient.new(@server.port_number)
+    @server.accept_new_client("Player 1")
+    expect(client2.capture_output).to eq("Welcome.  You are about to go to war.\n")
+    client3 = MockWarSocketClient.new(@server.port_number)
+    @server.accept_new_client("Player 1")
+    expect(client3.capture_output).to eq("Welcome.  Waiting for another player to join.\n")
+  end
+
+  context "game started" do
+    before(:each) do
+      @server.start
+      client1 = MockWarSocketClient.new(@server.port_number)
+      @clients.push(client1)
+      @server.accept_new_client("Player 1")
+      client1.capture_output
+      @server.create_game_if_possible
+      client2 = MockWarSocketClient.new(@server.port_number)
+      @clients.push(client2)
+      client2.capture_output
+      @server.accept_new_client("Player 2")
+      @server.create_game_if_possible
+    end
+
+    it "Tells each player how many cards they have left" do
+      @clients.each do |client|
+        expect(client.capture_output).to eq "You have 26 cards left"
+      end
+    end
+  end
   # For example:
   #   make sure the mock client gets appropriate output
   #   make sure the next round isn't played until both clients say they are ready to play

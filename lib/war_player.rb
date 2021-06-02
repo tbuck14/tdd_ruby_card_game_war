@@ -1,12 +1,13 @@
  class WarPlayer
         attr_reader :cards_left, :name
-    def initialize(name, hand)
+    def initialize(name, hand=[])
         @hand = hand
         @cards_left = @hand.count
         @name = name
     end
 
     def take_cards(cards) 
+       cards.shuffle!
        @hand.unshift(cards).flatten!
        @cards_left += cards.count
     end

@@ -3,6 +3,7 @@ class CardDeck
 
   def initialize
     @cards_left = 52
+    #Standard unshuffled card deck (the end of the array represents the top of the deck)
     @deck = [PlayingCard.new('2','spades'),PlayingCard.new('3','spades'),PlayingCard.new('4','spades'),PlayingCard.new('5','spades'),
     PlayingCard.new('6','spades'),PlayingCard.new('7','spades'),PlayingCard.new('8','spades'),PlayingCard.new('9','spades'),
     PlayingCard.new('10','spades'),PlayingCard.new('J','spades'),PlayingCard.new('Q','spades'),PlayingCard.new('K','spades'),

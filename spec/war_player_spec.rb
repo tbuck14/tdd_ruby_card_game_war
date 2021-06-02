@@ -11,9 +11,10 @@ describe 'WarPlayer' do
         expect(player.cards_left).to(eq(0))
         player.take_cards([PlayingCard.new('2','spades'),PlayingCard.new('10','hearts')])
         expect(player.cards_left).to(eq(2))
-        expect(player.play_card.suit).to(eq('hearts'))
-        expect(player.cards_left).to(eq(1))
-        expect(player.play_card.rank).to(eq('2'))
+        card = player.play_card
+        expect(card.rank == '10' || card.rank == '2').to(eq(true))
+        player.play_card
+        player.play_card
         expect(player.play_card).to(eq(nil))
     end
 end

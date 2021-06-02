@@ -31,8 +31,10 @@ describe 'WarGame' do
             game2 = WarGame.new(WarPlayer.new('test playerOne',[PlayingCard.new('2','spades'),PlayingCard.new('A','spades')]),WarPlayer.new('test playerTwo',[PlayingCard.new('4','diamonds'),PlayingCard.new('A','diamonds')]))
             game2.play_round
             expect(game2.player_one.cards_left).to(eq(0))
-            expect(game2.player_two.cards_left).to(eq(4))
+            expect(game2.player_two.cards_left).to(eq(0))
             expect(game2.winner.name).to(eq(game2.player_two.name))
+        end
+        it '' do 
         end
     end
 end

@@ -52,13 +52,4 @@ loop do
     if server_message == "play round?"
       client.provide_input(gets.chomp)
     end
-    # response = ""
-    # loop do
-    #     puts server_message
-    #     response = gets.chomp
-    #     if response == 'yes'
-    #         client.provide_input(response)
-    #         break
-    #     end
-    # end
 end

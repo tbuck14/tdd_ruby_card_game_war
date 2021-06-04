@@ -34,6 +34,7 @@ class WarSocketServer
     client = @server.accept_nonblock
     player = Player.new(WarPlayer.new(player_name),client,false)
     @players.push(player)
+    player.client.puts("Welcome to the game of war! you are #{player_name}")
     puts "Client #{player_name} Connected!"
     # associate player and client
   rescue IO::WaitReadable, Errno::EINTR
@@ -52,7 +53,6 @@ class WarSocketServer
 
   def can_play_round?(game)
     send_player_message_expect_response(game,'player1','play round?')
-    puts "made it here"
     send_player_message_expect_response(game,'player2','play round?')
   end
 
@@ -90,7 +90,6 @@ class WarSocketServer
     end
     output
   end
-
 end
 
 

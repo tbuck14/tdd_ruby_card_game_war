@@ -1,8 +1,9 @@
  class WarGame
-    attr_reader :player_one, :player_two
+    attr_reader :player_one, :player_two, :round_info
     def initialize(playerOne = WarPlayer.new('player one'), playerTwo = WarPlayer.new('player two'))
         @player_one = playerOne 
-        @player_two = playerTwo 
+        @player_two = playerTwo
+        @round_info = ""
     end
 
     def start()
@@ -24,45 +25,27 @@
         end
     end
 
-    def play_round(r_cards = [])
-        round_cards = r_cards
-        p1_card = @player_one.play_card
-        p2_card = @player_two.play_card
-        round_cards.push(p1_card, p2_card)
-        if p1_card.value > p2_card.value 
-            puts "#{@player_one.name} took #{p2_card.rank} of #{p2_card.suit} with #{p1_card.rank} of #{p1_card.suit},  total cards taken: #{round_cards.count}"
-            @player_one.take_cards(round_cards)
-        elsif p2_card.value > p1_card.value
-            puts "#{@player_two.name} took #{p1_card.rank} of #{p1_card.suit} with #{p2_card.rank} of #{p2_card.suit},  total cards taken: #{round_cards.count}"
-            @player_two.take_cards(round_cards)
-        else
-            puts "tie! between #{@player_one.name}'s #{p1_card.rank} and #{@player_two.name}'s #{p2_card.rank}"
-            draw_count = 0 
-            3.times do
-                if @player_one.cards_left == 0 && @player_two.cards_left == 0
-                    puts "Draw! both players ran out of cards during the war!"
-                    break
-                end
-                if @player_one.cards_left == 0 
-                    round_cards.push(@player_two.play_card)
-                    puts "#{@player_two.name} won because #{@player_one.name} ran out of cards,  total cards taken: #{round_cards.count}"
-                    @player_two.take_cards(round_cards)
-                    break 
-                else
-                    p1_war_card = @player_one.play_card
-                end
-                if @player_two.cards_left == 0 
-                    round_cards.push(@player_one.play_card)
-                    puts "#{@player_one.name} won because #{@player_two.name} ran out of cards,  total cards taken: #{round_cards.count}"
-                    @player_one.take_cards(round_cards)
-                    break
-                else
-                    p2_war_card = @player_two.play_card
-                end
-                round_cards.push(p1_war_card,p2_war_card)
-                draw_count +=1
-            end
-            play_round(round_cards) if draw_count == 3 && @player_one.cards_left > 0 && @player_two.cards_left > 0 
+    def play_round(r_cards = [], card1 = @player_one.play_card, card2 = @player_two.play_card)
+        r_cards.push(card1, card2)
+        war_result = get_war_cards(@player_one, @player_two) if card2.value == card1.value
+        r_cards += war_result if card2.value == card1.value
+        round_result(card1, card2, r_cards, @player_one) if card1.value > card2.value
+        round_result(card2, card1, r_cards, @player_two) if card2.value > card1.value
+        play_round(r_cards) if (war_result != nil && war_result.count == 6) && @player_one.cards_left > 0 && @player_two.cards_left > 0
+    end
+    
+    def get_war_cards(player_one, player_two)
+        war_cards = []
+        3.times do 
+            war_cards.push(player_one.play_card) if player_one.cards_left > 0 
+            war_cards.push(player_two.play_card) if player_two.cards_left > 0
         end
+        return war_cards
+    end
+
+    def round_result(winning_card, losing_card, total_cards_won, winning_player)
+        winning_player.take_cards(total_cards_won)
+        @round_info = "#{winning_player.name} has taken #{losing_card.rank} of #{losing_card.suit} with a #{winning_card.rank} of #{winning_card.suit}, total cards taken: #{total_cards_won.count}"
+        puts @round_info
     end
  end

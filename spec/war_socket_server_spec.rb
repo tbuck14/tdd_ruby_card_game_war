@@ -29,6 +29,7 @@ describe WarSocketServer do
   before(:each) do
     @clients = []
     @server = WarSocketServer.new
+    @server.start
   end
 
   after(:each) do
@@ -38,57 +39,54 @@ describe WarSocketServer do
     end
   end
 
+  def make_and_accept_client()
+    client = MockWarSocketClient.new(@server.port_number)
+    @clients.push(client)
+    @server.accept_new_client()
+    client
+  end
+
   it "is not listening on a port before it is started"  do
     expect {MockWarSocketClient.new(@server.port_number)}.to raise_error(Errno::ECONNREFUSED)
   end
 
   it "accepts new clients and starts a game if possible" do
-    @server.start
-    client1 = MockWarSocketClient.new(@server.port_number)
-    @clients.push(client1)
-    @server.accept_new_client("Player 1")
+    client1 = make_and_accept_client
     @server.create_game_if_possible
     expect(@server.games.count).to be 0
-    client2 = MockWarSocketClient.new(@server.port_number)
-    @clients.push(client2)
-    @server.accept_new_client("Player 2")
+    client2 = make_and_accept_client
     @server.create_game_if_possible
     expect(@server.games.count).to be 1
   end
-  it 'sends messages to the client' do 
-    @server.start 
-    client1 = MockWarSocketClient.new(@server.port_number)
-    @clients.push(client1)
-    @server.accept_new_client('trevor')
-    client2 = MockWarSocketClient.new(@server.port_number)
-    @clients.push(client2)
-    @server.accept_new_client('trevor new')
+  it 'sends messages to the client' do  
+    client1 = make_and_accept_client
+    client2 = make_and_accept_client
     @server.welcome_message
-    client1.capture_output
+    client1.capture_output(0)
     expect(client1.output).to(eq('welcome'))
-    client2.capture_output
+    client2.capture_output(1)
     expect(client2.output).to(eq('welcome'))
   end
-  it 'recieves messages from client' do 
-    @server.start 
-    client1 = MockWarSocketClient.new(@server.port_number)
-    @clients.push(client1)
-    @server.accept_new_client('trevor')
+  it 'recieves messages from client' do  
+    client1 = make_and_accept_client
     client1.provide_input('hello craig')
-    @server.capture_output
+    @server.capture_output(0) #the 0 represents the client number
     expect(@server.output).to(eq('hello craig'))
   end
   it 'plays a round if both players are ready' do 
-    @server.start
-    client1 = MockWarSocketClient.new(@server.port_number)
-    client2 = MockWarSocketClient.new(@server.port_number)
-    expect(@server.play_round('yes','yes')).to(eq(true))
+    client1 = make_and_accept_client
+    @server.players[0].ready = true
+    client2 = make_and_accept_client
+    @server.players[1].ready = true
+    expect(@server.can_play_round?).to(eq(true))
   end
   it 'does not play if one of the players is not ready' do 
-    @server.start
     client1 = MockWarSocketClient.new(@server.port_number)
+    @server.accept_new_client
+    @server.players[0].ready = true
     client2 = MockWarSocketClient.new(@server.port_number)
-    expect(@server.play_round('yes','no')).to(eq(false))
+    @server.accept_new_client
+    expect(@server.can_play_round?).to(eq(false))
   end
   # Add more tests to make sure the game is being played
   # For example:

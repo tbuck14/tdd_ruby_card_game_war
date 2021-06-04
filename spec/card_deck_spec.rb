@@ -21,7 +21,6 @@ describe 'CardDeck' do
     card2_suit = deck.deal.suit
     card3_suit = deck.deal.suit
     card4_suit = deck.deal.suit
-    card5_suit = deck.deal.suit
-    expect([card1_suit,card2_suit,card3_suit,card4_suit,card5_suit]).to_not(eq(['diamonds','diamonds','diamonds','diamonds','diamonds']))
+    expect([card1_suit,card2_suit,card3_suit,card4_suit]).to_not(eq(['diamonds','diamonds','diamonds','diamonds']))
   end
 end

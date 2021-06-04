@@ -13,8 +13,5 @@ describe 'WarPlayer' do
         expect(player.cards_left).to(eq(2))
         card = player.play_card
         expect(card.rank == '10' || card.rank == '2').to(eq(true))
-        player.play_card
-        player.play_card
-        expect(player.play_card).to(eq(nil))
     end
 end

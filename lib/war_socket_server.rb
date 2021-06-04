@@ -8,12 +8,11 @@ require_relative 'player'
 
 
 class WarSocketServer
-    attr_reader :games, :players, :output
-    attr_accessor :new_player_count
+    attr_reader :games, :players, :output, :game_with_players
   def initialize
     @games = []
-    @players = []
-    @new_player_count = 0 
+    @players = [] 
+    @game_with_players = {}
   end
 
   def port_number
@@ -35,7 +34,6 @@ class WarSocketServer
     client = @server.accept_nonblock
     player = Player.new(WarPlayer.new(player_name),client,false)
     @players.push(player)
-    @new_player_count += 1
     puts "Client #{player_name} Connected!"
     # associate player and client
   rescue IO::WaitReadable, Errno::EINTR
@@ -46,24 +44,22 @@ class WarSocketServer
     if @players.length == 2
        game = WarGame.new(@players[0].war_player, @players[1].war_player)
        @games.push(game)
-       @new_player_count = 0 
+       @game_with_players[game] = {'player1'=>@players[0], 'player2'=>@players[1]}
+       @players = []
        return game
-    else
-       return false
     end
   end
 
-  def can_play_round? 
-    if @players[0].ready && @players[1].ready
-        return true
-    else
-        return false
-    end
+  def can_play_round?(game)
+    send_player_message_expect_response(game,'player1','play round?')
+    puts "made it here"
+    send_player_message_expect_response(game,'player2','play round?')
   end
 
-  def capture_output(client_number)
+  #pass in the game and either 'player1' or 'player2'
+  def capture_output(game,player)
      sleep(0.1)
-     @output = @players[client_number].client.read_nonblock(1000).chomp 
+     @output = @game_with_players[game][player].client.read_nonblock(1000).chomp 
      rescue IO::WaitReadable
      @output = ""
   end
@@ -71,53 +67,50 @@ class WarSocketServer
   def stop
     @server.close if @server
   end
-end
 
-
-
-
-
-
-
-
-
-
-
-
-#SERVER RUNNER SCRIPT
-
-def game_script(server,game,game_count) 
-    game.start
-    server.players[game_count-2].client.puts('welcome to the game of war! You are player 1')
-    server.players[game_count-1].client.puts('welcome to the game of war! You are player 2')
+  def game_script(game)
     until game.winner do
-        server.players[game_count-2].client.puts('ready?')
-        output = ""
-        until output != ""
-            output = server.capture_output(game_count-2)
-        end
-        server.players[game_count-1].client.puts('ready?')
-        output = ""
-        until output != ""
-            output = server.capture_output(game_count-1)
-        end
-        game.play_round
-        result = game.round_info
-        server.players[game_count-2].client.puts(result)
-        server.players[game_count-1].client.puts(result)
-    end 
-end
-war_server = WarSocketServer.new()
-war_server.start
-war_game_count = 0 
-while true
-    until war_server.new_player_count == 2 do 
-        war_server.accept_new_client("player #{war_server.players.count + 1}")
+      can_play_round?(game) 
+      game.play_round
+      send_players_message(game,game.round_info)
     end
-    war_game_count+=2
+    puts "Winner: #{game.winner.name}"
+  end
+
+  def send_players_message(game,message)
+    @game_with_players[game]['player1'].client.puts(message) 
+    @game_with_players[game]['player2'].client.puts(message)
+  end
+
+  def send_player_message_expect_response(game,player,message)
+    @game_with_players[game][player].client.puts(message)
+    output = ""
+    until output != "" do 
+      output = capture_output(game,player)
+    end
+    output
+  end
+
+end
+
+
+
+
+
+
+
+#ServerRunnerScript
+war_server = WarSocketServer.new()
+war_server.start 
+while true
+    war_server.accept_new_client("player #{war_server.players.count + 1}")
     war_game = war_server.create_game_if_possible
-    #Thread.new(war_server, war_game, war_game_count){|war_server, war_game, war_game_count|game_script(war_server,war_game,war_game_count)}
-    game_script(war_server,war_game,war_game_count)
+    if war_game
+      Thread.new(war_game) do |game|
+        game.start
+        war_server.game_script(game)
+      end
+    end
 end
 war_server.players.each do |player|
     player.client.close

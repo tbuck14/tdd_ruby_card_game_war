@@ -48,13 +48,17 @@ loop do
     until server_message != ""
         server_message = client.capture_output
     end
-    response = ""
-    loop do
-        puts server_message
-        response = gets.chomp
-        if response == 'yes'
-            client.provide_input(response)
-            break
-        end
+    puts(server_message)
+    if server_message == "play round?"
+      client.provide_input(gets.chomp)
     end
+    # response = ""
+    # loop do
+    #     puts server_message
+    #     response = gets.chomp
+    #     if response == 'yes'
+    #         client.provide_input(response)
+    #         break
+    #     end
+    # end
 end

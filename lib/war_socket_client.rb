@@ -44,12 +44,12 @@ end
 
 client = WarSocketClient.new(3336)
 loop do 
-    server_message = ""
-    until server_message != ""
-        server_message = client.capture_output
-    end
-    puts(server_message)
-    if server_message == "play round?"
-      client.provide_input(gets.chomp)
-    end
+  server_message = ""
+  until server_message != ""
+    server_message = client.capture_output
+  end
+  puts(server_message)
+  if server_message == "play round?"
+    client.provide_input(gets.chomp)
+  end
 end

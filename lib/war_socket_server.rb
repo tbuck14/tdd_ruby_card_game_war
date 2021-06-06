@@ -51,7 +51,7 @@ class WarSocketServer
     end
   end
 
-  def can_play_round?(game)
+  def can_we_play_round(game)
     send_player_message_expect_response(game,'player1','play round?')
     send_player_message_expect_response(game,'player2','play round?')
   end
@@ -68,9 +68,9 @@ class WarSocketServer
     @server.close if @server
   end
 
-  def game_script(game)
+  def play_full_game(game)
     until game.winner do
-      can_play_round?(game) 
+      can_we_play_round(game) 
       game.play_round
       send_players_message(game,game.round_info)
     end
@@ -98,7 +98,8 @@ end
 
 
 
-#ServerRunnerScript
+#SERVER RUNNER SCRIPT
+
 war_server = WarSocketServer.new()
 war_server.start 
 while true
@@ -107,7 +108,7 @@ while true
     if war_game
       Thread.new(war_game) do |game|
         game.start
-        war_server.game_script(game)
+        war_server.play_full_game(game)
       end
     end
 end

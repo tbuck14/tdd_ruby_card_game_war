@@ -47,6 +47,7 @@ describe WarSocketServer do
   end
 
   it "is not listening on a port before it is started"  do
+    @server.stop #had to stop the server before testing, becuase in my before each I make and start the server everytime
     expect {MockWarSocketClient.new(@server.port_number)}.to raise_error(Errno::ECONNREFUSED)
   end
 
@@ -61,33 +62,21 @@ describe WarSocketServer do
   it 'sends messages to the client' do  
     client1 = make_and_accept_client
     client2 = make_and_accept_client
+    client1.capture_output
+    client2.capture_output
     @server.welcome_message
-    client1.capture_output(0)
-    expect(client1.output).to(eq('welcome'))
-    client2.capture_output(1)
-    expect(client2.output).to(eq('welcome'))
+    expect(client1.capture_output).to(eq('welcome'))
+    expect(client2.capture_output).to(eq('welcome'))
   end
   it 'recieves messages from client' do  
     client1 = make_and_accept_client
+    client2 = make_and_accept_client
+    game = @server.create_game_if_possible
     client1.provide_input('hello craig')
-    @server.capture_output(0) #the 0 represents the client number
+    @server.capture_output(game,'player1')
     expect(@server.output).to(eq('hello craig'))
   end
-  it 'plays a round if both players are ready' do 
-    client1 = make_and_accept_client
-    @server.players[0].ready = true
-    client2 = make_and_accept_client
-    @server.players[1].ready = true
-    expect(@server.can_play_round?).to(eq(true))
-  end
-  it 'does not play if one of the players is not ready' do 
-    client1 = MockWarSocketClient.new(@server.port_number)
-    @server.accept_new_client
-    @server.players[0].ready = true
-    client2 = MockWarSocketClient.new(@server.port_number)
-    @server.accept_new_client
-    expect(@server.can_play_round?).to(eq(false))
-  end
+
   # Add more tests to make sure the game is being played
   # For example:
   #   make sure the mock client gets appropriate output

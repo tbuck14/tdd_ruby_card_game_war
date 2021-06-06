@@ -14,7 +14,7 @@
             @player_two.take_cards([deck.deal])
         end
     end
-
+    
     def winner()
         if @player_one.cards_left == 0 
             return @player_two
